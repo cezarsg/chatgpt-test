@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ChatGPT</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="mb-4">ChatGPT</h1>
+
+    <div id="chat-container" class="mb-4">
+      <div id="chat-log" class="mb-3"></div>
+      <div class="input-group">
+        <input type="text" id="user-input" class="form-control" placeholder="Digite sua mensagem">
+        <div class="input-group-append">
+          <button id="send-btn" class="btn btn-primary">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      const chatLog = $('#chat-log');
+      const userInput = $('#user-input');
+      const sendBtn = $('#send-btn');
+
+      sendBtn.on('click', sendMessage);
+
+      async function sendMessage() {
+        const message = userInput.val().trim();
+        if (message === '') return;
+
+        const url = 'https://api.openai.com/v1/chat/comletions';
+        const apiKey = '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'; // Substitua pelo seu próprio valor
+
+        try {
+          appendMessage('Você', message);
+          userInput.val('');
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+              messages: [
+                { role: 'system', content: 'Você: Olá' },
+                { role: 'user', content: message },
+              ],
+            }),
+          });
+
+          const data = await response.json();
+          const reply = data.choices[0].message.content;
+          appendMessage('ChatGPT', reply);
+        } catch (error) {
+          console.error('Erro na solicitação:', error.message);
+        }
+      }
+
+      function appendMessage(role, content) {
+        const messageElement = $('<div>').text(`${role}: ${content}`);
+        chatLog.append(messageElement);
+        chatLog.scrollTop(chatLog[0].scrollHeight);
+      }
+    });
+  </script>
+</body>
+</html>

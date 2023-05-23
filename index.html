@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplo chat GPT</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4 mb-4">Formulário para ChatGPT</h1>
+
+        <div class="form-group">
+            <label for="prompt">Digite sua mensagem:</label>
+            <input type="text" class="form-control" id="prompt" name="prompt">
+        </div>
+
+        <button class="btn btn-primary" id="enviar">Enviar</button>
+
+        <h2 class="mt-4 mb-2">Resposta:</h2>
+        <button class="btn btn-secondary" id="limpar">Limpar</button>
+        
+        <div id="resposta" class="mt-2"></div>
+    </div>
+
+    <!-- Inclua os arquivos JavaScript do Bootstrap (jQuery e Popper.js) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    
+</body>
+<script>
+    const API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+    // const API_URL = 'https://api.openai.com/v1/engines/text-curie-001/completions';
+    const API_KEY = 'COLOCAR CHAVE';
+
+    $(document).ready(function() {
+
+        $("#prompt").val('Me dá 10 nomes de gatos machos');
+        $("#enviar").click(enviarTexto);
+        $("#limpar").click(limparTexto);
+    });
+
+    function limparTexto() {
+        $("#resposta").text('');
+    }
+
+    async function enviarTexto() {
+        toggleBotaoEnviar();
+        const texto = $("#prompt").val();
+        try {
+            const res = await generateText(texto);
+            console.log("Segue a resposta: " + res + ", tam: " + res.length);
+            appendResposta(res);
+        } catch (error) {
+            console.error("Houve um erro: " + error);
+            appendResposta(error);
+        }
+        toggleBotaoEnviar();
+        $("#prompt").val('Me dá 10 nomes de cachorros femeas');
+    }
+
+    function appendResposta(texto) {
+        // var respostaDiv = $("#resposta");
+        // respostaDiv.text(respostaDiv.text() + '\n' + texto);
+        // $("#resposta").append('\n' + texto);
+        $("#resposta").append('<br>' + texto);
+
+    }
+
+    function toggleBotaoEnviar() {
+        var enviarBtn = $("#enviar");
+        enviarBtn.prop("disabled", !enviarBtn.prop("disabled"));
+    }
+
+    async function generateText(prompt) {
+        const headers = new Headers({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`
+        });
+        const body = JSON.stringify({
+            prompt: prompt,
+            max_tokens: 990,
+            n: 1,
+            stop: null,
+            temperature: 0.7
+        });
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: headers,
+            body: body,                
+        });
+        
+        const result = await response.json();            
+        const msg = result.choices[0].text.trim();
+        return msg;
+    }
+
+</script>
+
+</html>
